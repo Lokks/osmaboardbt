@@ -3,14 +3,9 @@
 
 select 
 
--- year(closed_at) as cs_year,
--- month(closed_at) as cs_month,
-
-year(created_at) as cs_year,
-month(created_at) as cs_month,
-
+year(closed_at) as cs_year,
+month(closed_at) as cs_month,
 {{ created_by_name_unification('created_by', default_value='others') }} as created_by,
-
 count(*) as cs_cnt,
 sum(case when cs_number_per_user = 1 then 1 else 0 end) as cs_cnt_first_cs
 

@@ -1,23 +1,23 @@
 # osmaboardbt project description
 
 Straightforward project to consume OSM data, DuckDB and DBT for data transformation to analize metadata.
-Put result to S3-comptable storage to be shown in some dashboard.
+Puts result to S3-comptable storage to be shown in some dashboard.
 
-## Steps Overview
+## Pipeline Steps Overview
 
-1. Download full changesets history file from planet OSM 
+1. Download full changesets history file from planet OSM
 2. Download osm pbf file(s) for country of interest (Poland, for example)
 3. Split changesets history to smaller osm.bz2 files
 4. Transform changesets files to parquet ones
 5. Load into local DuckDB and apply transformations via dbt models
 6. Perform analyzis
-7. Load osm data for more analyzis
+7. Load regular OSM data for more analyzis
 8. ....
 9. PROFIT!!
 
 ## Project overview
 
-The project framework is based on [geocint-runner](https://github.com/konturio/geocint-runner) - geodata 
+The project framework is based on [geocint-runner](https://github.com/konturio/geocint-runner) - geodata
 ETL/CI/CD pipeline.
 
 - GNU Make is used as job server

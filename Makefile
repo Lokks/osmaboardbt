@@ -48,7 +48,7 @@ data/mid/osmium: | data/mid ## create folder for temp files to be loaded into PG
 
 data/mid/osmium/changesets-history: | data/in/osm_data/changesets-latest.osm.bz2 data/mid/osmium ## split changeset data per years, run in parallel
 	rm -f data/mid/osmium/changesets_2*
-	cat static_data/changesets_per_yer_division.csv | tail -n +2 | parallel -j $(max_parallel_workers) --colsep ';' 'osmium changeset-filter -a {2} -b {3} -with-changes --closed --fsync data/in/osm_data/changesets-latest.osm.bz2 -o {1}'	
+	cat static_data/changesets_per_yer_division.csv | tail -n +2 | parallel -j $(max_parallel_workers) --colsep ';' 'osmium changeset-filter -a {2} -b {3} -with-changes --closed --fsync data/in/osm_data/changesets-latest.osm.bz2 -o data/mid/osmium/{1}'	
 	touch $@
 
 data/mid/osmium/changesets-latest.osm.bz2: data/in/osm_data/changesets-latest.osm.bz2 | data/mid/osmium ## create changeset file for dates after last historical one
@@ -75,11 +75,13 @@ db: ## Directory for storing duckdb and dbt related footprints.
 db/dbt: | db ## Directory for storing dbt actions footprints.
 	mkdir -p $@
 
-db/dbt/debug: | db/dbt ## check if all set up.
+db/dbt/debug: | db/dbt ## check if exit code is 0
+	export DBT_PROFILES_DIR=$(pwd)/osmaboar_dbt/
 	cd $(DBT_PROFILES_DIR); dbt debug
 	touch $@
 
 db/dbt/models_created: db/dbt/debug | db/dbt ## Load parquet files into duckdb, create raw and aggregated tables.
+	export DBT_PROFILES_DIR=$(pwd)/osmaboar_dbt/
 	cd $(DBT_PROFILES_DIR); dbt run
 	touch $@
 
