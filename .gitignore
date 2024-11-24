@@ -1,0 +1,16 @@
+
+.vscode
+data/*
+logs
+db
+dev
+deploy
+make_profile.db
+make.svg
+make_last.svg
+make.lock
+duckdb
+osmaboardbt.duckdb
+osmaboardbt/logs
+misc.txt
+log.txt

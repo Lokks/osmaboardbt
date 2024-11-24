@@ -1,0 +1,8 @@
+
+target/
+dbt_packages/
+logs/
+profiles.yml
+.user.yml
+____sqlfluff
+dbt_project.yml

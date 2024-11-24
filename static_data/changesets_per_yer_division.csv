@@ -1,0 +1,12 @@
+output_file_bz2;after_ts;before_ts;output_file_parquet
+changesets_2005_2012.osm.bz2;2005-04-01T00:00:00Z;2013-01-01T00:00:00Z;changesets_2005_2012.parquet
+changesets_2013_2015.osm.bz2;2013-01-01T00:00:00Z;2016-01-01T00:00:00Z;changesets_2013_2015.parquet
+changesets_2016.osm.bz2;2016-01-01T00:00:00Z;2017-01-01T00:00:00Z;changesets_2016.parquet
+changesets_2017.osm.bz2;2017-01-01T00:00:00Z;2018-01-01T00:00:00Z;changesets_2017.parquet
+changesets_2018.osm.bz2;2018-01-01T00:00:00Z;2019-01-01T00:00:00Z;changesets_2018.parquet
+changesets_2019.osm.bz2;2019-01-01T00:00:00Z;2020-01-01T00:00:00Z;changesets_2019.parquet
+changesets_2020.osm.bz2;2020-01-01T00:00:00Z;2021-01-01T00:00:00Z;changesets_2020.parquet
+changesets_2021.osm.bz2;2021-01-01T00:00:00Z;2022-01-01T00:00:00Z;changesets_2021.parquet
+changesets_2022.osm.bz2;2022-01-01T00:00:00Z;2023-01-01T00:00:00Z;changesets_2022.parquet
+changesets_2023.osm.bz2;2023-01-01T00:00:00Z;2024-01-01T00:00:00Z;changesets_2023.parquet
+changesets_2024.osm.bz2;2024-01-01T00:00:00Z;2024-11-01T00:00:00Z;changesets_2024.parquet
