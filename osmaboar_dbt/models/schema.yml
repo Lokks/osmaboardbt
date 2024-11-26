@@ -20,5 +20,5 @@ models:
     #       - unique
     #       - not_null
 
-  - name: changesets_filtered_by_month_app
-    description: "aggregations by month per app (created_by)"
+  - name: changesets_filtered_by_month_host
+    description: "aggregations by month per host"

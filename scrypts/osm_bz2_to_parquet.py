@@ -5,7 +5,6 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import argparse
 
-
 import pandas as pd
 import datetime
 
@@ -98,7 +97,7 @@ def convert_xml_to_parquet(input_file, output_file, chunk_size):
                     if first_chunk:
                         writer.write_table(table)
                         first_chunk = False
-                        print(f"First chunk was written to {output_file}")
+                        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} First chunk was written to {output_file}")
                     else:
                         writer.write_table(table)
                     
@@ -107,12 +106,12 @@ def convert_xml_to_parquet(input_file, output_file, chunk_size):
             
                 row_counter += 1
                 if row_counter % 1000000 == 0:
-                    print(f"File {input_file}: Processed {row_counter//1000000} mln changesets")
+                    print(f"{datetime.datetime.now().strftime('%H:%M:%S')} File {input_file}: Processed {row_counter//1000000} mln changesets")
 
 
         # Write any remaining rows after loop ends
         if data_chunk:
-            print(f"Writing final chunk of size {len(data_chunk)} to Parquet. {row_counter} changesets in total")
+            print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Writing final chunk of size {len(data_chunk)} to Parquet. {row_counter} changesets in total")
             df_chunk = pd.DataFrame(data_chunk)
             table = pa.Table.from_pandas(df_chunk)
             if writer is None:

@@ -18,7 +18,7 @@ Puts result to S3-comptable storage to be shown in some dashboard.
 ## Project overview
 
 The project framework is based on [geocint-runner](https://github.com/konturio/geocint-runner) - geodata
-ETL/CI/CD pipeline.
+ETL/CI/CD pipeline:
 
 - GNU Make is used as job server
 - [make-profiler](https://github.com/konturio/make-profiler) is used as linter and preprocessor for Make

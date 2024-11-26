@@ -1,5 +1,5 @@
 -- changesets_filtered_raw
--- {{ config(materialized='table') }}
+{{ config(materialized='table') }}
 
 select
     id,
@@ -21,4 +21,4 @@ select
     lower(hashtags) as hashtags,
     row_number() over (partition by user order by closed_at asc) as cs_number_for_user
 
-from '../data/out/parquet/changesets*.parquet'
+from parquet_scan('../data/out/parquet/changesets*.parquet')

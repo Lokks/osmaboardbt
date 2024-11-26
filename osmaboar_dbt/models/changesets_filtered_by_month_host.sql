@@ -1,5 +1,6 @@
 
 -- changesets_filtered_by_month_host
+{{ config(materialized='table') }}
 
 select 
 
