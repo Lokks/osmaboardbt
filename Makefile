@@ -11,7 +11,7 @@ clean_all: ## [FINAL] Cleans worktree by removing input data
 	rm -rf data/in/osm_data
 
 clean_dev: ## [FINAL] Cleans data for latest period only
-	rm -rf data/in/osm_data/changesets-latest.osm.bz2
+	rm -rf data/in/osm_data/changesets_latest.osm.bz2
 	rm -rf data/in/osm_data/poland-latest.osm.pbf
 	rm -f db/dbt/debug
 
@@ -30,11 +30,11 @@ data/out: | data ## Generated final data.
 data/in/osm_data: | data/in ## Data from OSM resources.
 	mkdir -p $@
 
-data/in/osm_data/changesets-latest.osm.bz2: | data/in/osm_data ## Download latest planet changeset and rename it to -latest
-	rm -f data/in/osm_data/changesets-latest.osm.bz2
+data/in/osm_data/changesets_latest.osm.bz2: | data/in/osm_data ## Download latest planet changeset and rename it to -latest
+	rm -f data/in/osm_data/changesets_latest.osm.bz2
 	cd data/in/osm_data; aria2c --seed-time 0 https://planet.openstreetmap.org/planet/changesets-latest.osm.bz2.torrent 
 	rm -f data/in/osm_data/changesets-*.osm.bz2.torrent
-	mv changesets-2* changesets-latest.osm.bz2
+	mv changesets-2* changesets_latest.osm.bz2
 	touch $@
 
 # data/in/osm_data/poland-latest.osm.pbf: | data/in/osm_data ## Download latest Poland osm data
@@ -44,14 +44,14 @@ data/in/osm_data/changesets-latest.osm.bz2: | data/in/osm_data ## Download lates
 data/mid/osmium: | data/mid ## Folder for temporary osm.bz2 files
 	mkdir -p $@
 
-data/mid/osmium/changesets-history: | data/in/osm_data/changesets-latest.osm.bz2 data/mid/osmium ## Ssplit changesets data per years, run in parallel
+data/mid/osmium/changesets-history: | data/in/osm_data/changesets_latest.osm.bz2 data/mid/osmium ## Ssplit changesets data per years, run in parallel
 	rm -f data/mid/osmium/changesets_2*
-	cat static_data/changesets_per_yer_division.csv | tail -n +2 | parallel -j $(max_parallel_workers) --colsep ';' 'osmium changeset-filter -a {2} -b {3} --with-changes --closed --fsync data/in/osm_data/changesets-latest.osm.bz2 -o data/mid/osmium/{1}'	
+	cat static_data/changesets_per_yer_division.csv | tail -n +2 | parallel -j $(max_parallel_workers) --colsep ';' 'osmium changeset-filter -a {2} -b {3} --with-changes --closed --fsync data/in/osm_data/changesets_latest.osm.bz2 -o data/mid/osmium/{1}'	
 	touch $@
 
-data/mid/osmium/changesets-latest.osm.bz2: data/in/osm_data/changesets-latest.osm.bz2 | data/mid/osmium ## Create changeset file for dates after last historical one
+data/mid/osmium/changesets_latest.osm.bz2: data/in/osm_data/changesets_latest.osm.bz2 | data/mid/osmium ## Create changeset file for dates after last historical one
 	rm -f $@
-	cat static_data/changesets_per_yer_division.csv | tail -1 | parallel -j 1 --colsep ';' 'osmium changeset-filter -a {3} --with-changes --closed --fsync data/in/osm_data/changesets-latest.osm.bz2 -o data/mid/osmium/changesets-latest.osm.bz2'
+	cat static_data/changesets_per_yer_division.csv | tail -1 | parallel -j 1 --colsep ';' 'osmium changeset-filter -a {3} --with-changes --closed --fsync data/in/osm_data/changesets_latest.osm.bz2 -o data/mid/osmium/changesets_latest.osm.bz2'
 	touch $@
 
 data/out/parquet: | data/out ## Output folder for parquet files.
@@ -62,14 +62,14 @@ data/out/parquet/changesets-history: data/mid/osmium/changesets-history | data/o
 	cat static_data/changesets_per_yer_division.csv | tail -n +2 | parallel -j $(max_parallel_workers) --colsep ';' 'python scrypts/osm_bz2_to_parquet.py -in data/mid/osmium/{1} -out data/out/parquet/{4} -chunk 5000'
 	touch $@
 
-#data/out/parquet/changesets-latest.parquet: data/mid/osmium/changesets-latest.osm.bz2 | data/out/parquet ## Convert latest osm changesets files to parquet one
+#data/out/parquet/changesets_latest.parquet: data/mid/osmium/changesets_latest.osm.bz2 | data/out/parquet ## Convert latest osm changesets files to parquet one
 #	rm -f $@
-#	python scrypts/osm_bz2_to_parquet.py -in data/mid/osmium/changesets-latest.osm.bz2 -out data/out/parquet/changesets-latest.parquet -chunk 5000
+#	python scrypts/osm_bz2_to_parquet.py -in data/mid/osmium/changesets_latest.osm.bz2 -out data/out/parquet/changesets_latest.parquet -chunk 5000
 #	touch $@
 
-data/out/parquet/changesets-latest.parquet: data/out/parquet/changesets-history | data/out/parquet ## test runs with test files
+data/out/parquet/changesets_latest.parquet: data/out/parquet/changesets-history | data/out/parquet ## test runs with test files
 	rm -f $@
-	mv data/out/parquet/changesets_2024.parquet data/out/parquet/changesets-latest.parquet
+	mv data/out/parquet/changesets_2024.parquet data/out/parquet/changesets_latest.parquet
 	touch $@
 
 db: ## Folder for storing duckdb and dbt related footprints.
@@ -82,9 +82,9 @@ db/dbt/debug: | db/dbt ## check if exit code is 0, clean all
 	cd $(DBT_PROFILES_DIR); dbt clean; dbt debug
 	touch $@
 
-db/dbt/models_created: data/out/parquet/changesets-history data/out/parquet/changesets-latest.parquet db/dbt/debug | db/dbt ## Load parquet files into duckdb, create raw and aggregated tables.
+db/dbt/models_created: data/out/parquet/changesets-history data/out/parquet/changesets_latest.parquet db/dbt/debug | db/dbt ## Load parquet files into duckdb, create raw and aggregated tables.
 	cd $(DBT_PROFILES_DIR); dbt run --full-refresh
 	touch $@
 
-dev: db/dbt/models_created data/out/parquet/changesets-latest.parquet ## [FINAL] final target
+dev: db/dbt/models_created data/out/parquet/changesets_latest.parquet ## [FINAL] final target
 	touch $@

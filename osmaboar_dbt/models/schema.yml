@@ -2,8 +2,17 @@
 version: 2
 
 models:
-  - name: changesets_filtered_raw
-    description: "adjusted data from changesets_filtered.parquet"
+  - name: changesets_raw
+    description: "data from changesets parquet files"
+    columns:
+      - name: id
+        description: "changeset id"
+        data_tests:
+          - unique
+          - not_null
+        
+  - name: changesets_number_per_user
+    description: "number of changeset for particular user"
     columns:
       - name: id
         description: "changeset id"
@@ -11,14 +20,8 @@ models:
           - unique
           - not_null
 
-  - name: changesets_filtered_by_month_app
+  - name: changesets_by_month_app
     description: "aggregations by month per app (created_by)"
-    # columns:
-    #   - name: id
-    #     description: "The primary key for this table"
-    #     data_tests:
-    #       - unique
-    #       - not_null
 
-  - name: changesets_filtered_by_month_host
+  - name: changesets_by_month_host
     description: "aggregations by month per host"

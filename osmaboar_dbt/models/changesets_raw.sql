@@ -1,4 +1,4 @@
--- changesets_filtered_raw
+-- changesets_raw
 {{ config(materialized='table') }}
 
 select
@@ -19,6 +19,6 @@ select
         else replace(replace(lower(tags['host'][1]), 'https://', ''), 'www.', '')
     end as host,
     lower(tags['hashtags'][1]) as hashtags,
-    row_number() over (partition by user order by closed_at asc) as cs_number_for_user
+    filename
 
-from parquet_scan('../data/out/parquet/changesets*.parquet')
+from read_parquet('../data/out/parquet/changesets*.parquet', filename = true)
