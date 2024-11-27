@@ -16,3 +16,4 @@ misc.txt
 log.txt
 osmaboardbt.duckdb.tmp/*
 duckdb
+report.json

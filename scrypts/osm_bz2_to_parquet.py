@@ -4,8 +4,6 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 import argparse
-
-import pandas as pd
 import datetime
 
 def safe_to_bigint(value):
@@ -41,6 +39,20 @@ def convert_xml_to_parquet(input_file, output_file, chunk_size):
     writer = None
     row_counter = 0
 
+    schema = pa.schema([
+        ('id', pa.int64()),
+        ('created_at', pa.timestamp('s', tz='UTC')),
+        ('closed_at', pa.timestamp('s', tz='UTC')),
+        ('uid', pa.int64()),
+        ('user', pa.string()),
+        ('num_changes', pa.int32()),
+        ('min_lat', pa.float64()),
+        ('min_lon', pa.float64()),
+        ('max_lat', pa.float64()),
+        ('max_lon', pa.float64()),
+        ('tags', pa.map_(pa.string(), pa.string()))
+    ])
+
     # Open and stream the XML and Initialize iterparse to stream through XML file
     with bz2.open(input_file, "rt") as file:
         for event, element in ET.iterparse(file, events=("end",)):
@@ -58,26 +70,12 @@ def convert_xml_to_parquet(input_file, output_file, chunk_size):
                     'min_lon': safe_to_double(element.get('min_lon')),
                     'max_lat': safe_to_double(element.get('max_lat')),
                     'max_lon': safe_to_double(element.get('max_lon')),
-
-                    # Set default values for tags that might be missing in chunk
-                    'created_by': '',
-                    'imagery_used': '',
-                    'host': '',
-                    # number of changesets the user has made before the current one
-                    # only works for Id and Rapid, will be calculated in database instead
-                    # 'changesets_count': '',
-                    'hashtags': ''                    
+                    'tags': {}                
                 }
                 
                 for tag in element.findall('tag'):
-                    if tag.get('k') == 'created_by':
-                        record_data['created_by'] = tag.get('v')
-                    elif tag.get('k') == 'imagery_used':
-                        record_data['imagery_used'] = tag.get('v')
-                    elif tag.get('k') == 'host':
-                        record_data['host'] = tag.get('v')
-                    elif tag.get('k') == 'hashtags':
-                        record_data['hashtags'] = tag.get('v')
+                    tag_key, tag_value = tag.get('k'), tag.get('v')
+                    record_data['tags'][tag_key] = tag_value
                 
                 # Add record to the current chunk and free up memory
                 data_chunk.append(record_data)
@@ -85,9 +83,8 @@ def convert_xml_to_parquet(input_file, output_file, chunk_size):
                 
                 # If chunk size is reached, write the chunk to Parquet
                 if len(data_chunk) >= chunk_size:
-                    # print(f"Writing chunk of size {len(data_chunk)} to Parquet.")
-                    df_chunk = pd.DataFrame(data_chunk)                    
-                    table = pa.Table.from_pandas(df_chunk)
+                    df_chunk = pd.DataFrame(data_chunk)
+                    table = pa.Table.from_pandas(df_chunk, schema=schema)
 
                     #Initialize Parquet file with the first chunk
                     if writer is None: 
@@ -113,9 +110,9 @@ def convert_xml_to_parquet(input_file, output_file, chunk_size):
         if data_chunk:
             print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Writing final chunk of size {len(data_chunk)} to Parquet. {row_counter} changesets in total")
             df_chunk = pd.DataFrame(data_chunk)
-            table = pa.Table.from_pandas(df_chunk)
+            table = pa.Table.from_pandas(df_chunk, schema=schema)
             if writer is None:
-                writer = pq.ParquetWriter(output_file, table.schema.remove_metadata())
+                writer = pq.ParquetWriter(output_file, table.schema.remove_metadata(), compression='snappy', use_dictionary=True)
             writer.write_table(table)
 
             if writer is not None:

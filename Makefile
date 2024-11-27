@@ -6,9 +6,6 @@ export DBT_PROFILES_DIR=$(pwd)/osmaboar_dbt/
 
 ## ------------- CONTROL BLOCK -------------------------
 
-dev: pg_db/table/osm_pl data/in/osm_data/changesets-latest.osm.bz2 ## [FINAL] send data to cloud storage
-	touch $@
-
 clean_all: ## [FINAL] Cleans worktree by removing input data
 	rm -rf data/in/osm_data
 
@@ -61,12 +58,12 @@ data/out/parquet: | data/out ## output folder for parquet files.
 
 data/out/parquet/changesets-latest.parquet: data/mid/osmium/changesets-latest.osm.bz2 | data/out/parquet ## convert latest osm changesets files to parquet one
 	rm -f $@
-	python scrypts/osm_bz2_to_parquet.py  -in data/mid/osmium/changesets-latest.osm.bz2  -out data/out/parquet/changesets-latest.parquet -chunk 5000
+	python scrypts/osm_bz2_to_parquet.py -in data/mid/osmium/changesets-latest.osm.bz2 -out data/out/parquet/changesets-latest.parquet -chunk 5000
 	touch $@
 
 data/out/parquet/changesets-history: data/mid/osmium/changesets-history | data/out/parquet ## convert historical osm changesets files to parquet ones
 	rm -f data/out/parquet/changesets_2*.parquet
-	cat static_data/changesets_per_yer_division.csv | tail -n +2 | parallel -j $(max_parallel_workers) --colsep ';' 'python scrypts/osm_bz2_to_parquet.py  -in data/mid/osmium/{1}  -out data/out/parquet/{4} -chunk 5000'
+	cat static_data/changesets_per_yer_division.csv | tail -n +2 | parallel -j $(max_parallel_workers) --colsep ';' 'python scrypts/osm_bz2_to_parquet.py -in data/mid/osmium/{1} -out data/out/parquet/{4} -chunk 5000'
 	touch $@
 
 db: ## Directory for storing duckdb and dbt related footprints.
@@ -80,7 +77,7 @@ db/dbt/debug: | db/dbt ## check if exit code is 0
 	cd $(DBT_PROFILES_DIR); dbt clean; dbt debug
 	touch $@
 
-db/dbt/models_created: data/out/parquet/changesets-history db/dbt/debug | db/dbt ## Load parquet files into duckdb, create raw and aggregated tables.
+db/dbt/models_created: data/out/parquet/changesets-history data/out/parquet/changesets-latest.parquet db/dbt/debug | db/dbt ## Load parquet files into duckdb, create raw and aggregated tables.
 	export DBT_PROFILES_DIR=$(pwd)/osmaboar_dbt/
 	cd $(DBT_PROFILES_DIR); dbt run --full-refresh
 	touch $@
