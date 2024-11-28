@@ -19,6 +19,6 @@ select
         else replace(replace(lower(tags['host'][1]), 'https://', ''), 'www.', '')
     end as host,
     lower(tags['hashtags'][1]) as hashtags,
-    filename
+    replace(filename, '../data/out/parquet/', '') as filename
 
 from read_parquet('../data/out/parquet/changesets*.parquet', filename = true)

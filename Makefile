@@ -1,7 +1,9 @@
 ## -------------- VARIABLES BLOCK ----------------------
-current_date:=$(shell date '+%y%m%d')
-aws_region:= eu-central-1
-max_parallel_workers:= 4
+current_date := $(shell date '+%y%m%d')
+aws_region := eu-central-1
+dbt_max_memory := 4096
+dbt_max_threads := 6
+max_parallel_workers := 4
 DBT_PROFILES_DIR := $(shell pwd)/osmaboar_dbt
 export DBT_PROFILES_DIR
 

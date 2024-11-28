@@ -11,11 +11,11 @@ models:
           - unique
           - not_null
         
-  - name: changesets_number_per_user
-    description: "number of changeset for particular user"
+  - name: first_user_changeset
+    description: "uid and his/her/their first changeset id"
     columns:
-      - name: id
-        description: "changeset id"
+      - name: uid
+        description: "user id"
         data_tests:
           - unique
           - not_null

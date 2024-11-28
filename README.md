@@ -48,7 +48,8 @@ Please follow official documentation
 
 ## Current state
 
-Step 5 from Steps Overview is in progress, parquet files preparation is ready:
+Step 6 from Steps Overview done (in some way), moving to step 7.
+Parquet files preparation is ready:
 
 ```SQL
 D select filename, count(*) cnt from read_parquet('data/out/parquet/changesets_*.parquet', filename = true) group by 1 order by 1;

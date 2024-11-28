@@ -21,5 +21,3 @@ models:
   osmaboar_dbt:
     # Config indicated by + and applies to all files under models/example/
     +materialized: table
-    # vars:
-    #  file_path: '../data/out/parquet/'
