@@ -58,7 +58,7 @@ D select filename, count(*) cnt from read_parquet('data/out/parquet/changesets_*
 │                   filename                    │   cnt    │
 │                    varchar                    │  int64   │
 ├───────────────────────────────────────────────┼──────────┤
-│ data/out/parquet/changesets_2005_2012.parquet │ 18938166 │
+│ data/out/parquet/changesets_2005_2012.parquet │ 13777528 │
 │ data/out/parquet/changesets_2013_2015.parquet │ 20731429 │
 │ data/out/parquet/changesets_2016.parquet      │  8420095 │
 │ data/out/parquet/changesets_2017.parquet      │ 10091179 │
@@ -68,9 +68,10 @@ D select filename, count(*) cnt from read_parquet('data/out/parquet/changesets_*
 │ data/out/parquet/changesets_2021.parquet      │ 18808719 │
 │ data/out/parquet/changesets_2022.parquet      │ 15036354 │
 │ data/out/parquet/changesets_2023.parquet      │ 14889321 │
-│ data/out/parquet/changesets_2024.parquet      │ 12973297 │
+│ data/out/parquet/changesets_2024.parquet      │ 12775670 │
+│ data/out/parquet/changesets_latest.parquet    │   659191 │
 ├───────────────────────────────────────────────┴──────────┤
-│ 11 rows                                        2 columns │
+│ 12 rows                                        2 columns │
 └──────────────────────────────────────────────────────────┘
-Run Time (s): real 3.592 user 7.167735 sys 1.145013
+
 ```

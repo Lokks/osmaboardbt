@@ -20,6 +20,9 @@ models:
           - unique
           - not_null
 
+  - name: changesets_number_per_user
+    description: "uid and his/her/their changeset number ordered by creation date"
+
   - name: changesets_by_month_app
     description: "aggregations by month per app (created_by)"
 

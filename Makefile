@@ -46,7 +46,7 @@ data/in/osm_data/changesets_latest.osm.bz2: | data/in/osm_data ## Download lates
 data/mid/osmium: | data/mid ## Folder for temporary osm.bz2 files
 	mkdir -p $@
 
-data/mid/osmium/changesets-history: | data/in/osm_data/changesets_latest.osm.bz2 data/mid/osmium ## Ssplit changesets data per years, run in parallel
+data/mid/osmium/changesets-history: data/in/osm_data/changesets_latest.osm.bz2 | data/mid/osmium ## Split changesets data per years, run in parallel
 	rm -f data/mid/osmium/changesets_2*
 	cat static_data/changesets_per_yer_division.csv | tail -n +2 | parallel -j $(max_parallel_workers) --colsep ';' 'osmium changeset-filter -a {2} -b {3} --with-changes --closed --fsync data/in/osm_data/changesets_latest.osm.bz2 -o data/mid/osmium/{1}'	
 	touch $@
@@ -64,15 +64,15 @@ data/out/parquet/changesets-history: data/mid/osmium/changesets-history | data/o
 	cat static_data/changesets_per_yer_division.csv | tail -n +2 | parallel -j $(max_parallel_workers) --colsep ';' 'python scrypts/osm_bz2_to_parquet.py -in data/mid/osmium/{1} -out data/out/parquet/{4} -chunk 5000'
 	touch $@
 
-#data/out/parquet/changesets_latest.parquet: data/mid/osmium/changesets_latest.osm.bz2 | data/out/parquet ## Convert latest osm changesets files to parquet one
-#	rm -f $@
-#	python scrypts/osm_bz2_to_parquet.py -in data/mid/osmium/changesets_latest.osm.bz2 -out data/out/parquet/changesets_latest.parquet -chunk 5000
-#	touch $@
-
-data/out/parquet/changesets_latest.parquet: data/out/parquet/changesets-history | data/out/parquet ## test runs with test files
+data/out/parquet/changesets_latest.parquet: data/mid/osmium/changesets_latest.osm.bz2 | data/out/parquet ## Convert latest osm changesets files to parquet one
 	rm -f $@
-	mv data/out/parquet/changesets_2024.parquet data/out/parquet/changesets_latest.parquet
+	python scrypts/osm_bz2_to_parquet.py -in data/mid/osmium/changesets_latest.osm.bz2 -out data/out/parquet/changesets_latest.parquet -chunk 5000
 	touch $@
+
+# data/out/parquet/changesets_latest.parquet: data/out/parquet/changesets-history | data/out/parquet ## test runs with test files
+# 	rm -f $@
+# 	mv data/out/parquet/changesets_2024.parquet data/out/parquet/changesets_latest.parquet
+# 	touch $@
 
 db: ## Folder for storing duckdb and dbt related footprints.
 	mkdir -p $@
@@ -88,5 +88,5 @@ db/dbt/models_created: data/out/parquet/changesets-history data/out/parquet/chan
 	cd $(DBT_PROFILES_DIR); dbt run --full-refresh
 	touch $@
 
-dev: db/dbt/models_created data/out/parquet/changesets_latest.parquet ## [FINAL] final target
+dev: db/dbt/models_created ## [FINAL] final target
 	touch $@
