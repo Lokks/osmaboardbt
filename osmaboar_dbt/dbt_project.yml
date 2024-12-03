@@ -1,5 +1,9 @@
 name: 'osmaboar_dbt'
 version: '1.0.0'
+
+on-run-start:
+  - "load spatial;"
+
 profile: 'osmaboar_dbt'
 
 model-paths: ["models"]

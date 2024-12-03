@@ -30,6 +30,12 @@ Core differences:
 - DuckDB + quackosm is used instead of PostgreSQL + Postgis
 - Db data transformations is managed by dbt
 
+## Disk usage
+
+Make sure you have around 80G disk space free for it's current state.
+Some estimates might be foud in targets comments.
+TODO: use shellfs during import to DuckDB and bz2 during json outputs creation.
+
 ## Dependencies installation
 
 To be updated!
@@ -48,7 +54,7 @@ Please follow official documentation
 
 ## Current state
 
-Step 6 from Steps Overview done (in some way), moving to step 7.
+Step 6 from Steps Overview done (in some way), as well as step 7.
 Parquet files preparation is ready:
 
 ```SQL
