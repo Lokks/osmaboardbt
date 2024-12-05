@@ -3,6 +3,7 @@ version: '1.0.0'
 
 on-run-start:
   - "load spatial;"
+  - "ATTACH '../poland_internal.duckdb' AS poland_internal;"
 
 profile: 'osmaboar_dbt'
 

@@ -1,7 +1,7 @@
 ## -------------- VARIABLES BLOCK ----------------------
 current_date := $(shell date '+%y%m%d')
 aws_region := eu-central-1
-dbt_max_memory := 4096
+duckdb_max_memory := 4GB
 dbt_max_threads := 6
 osmium_pool_threads := 6
 max_parallel_workers := 4
@@ -51,13 +51,9 @@ data/in/osm_data/poland-latest-internal: ## check if internal file exists. Shoul
 data/mid/osmium: | data/mid ## Folder for temporary osm.bz2 files
 	mkdir -p $@
 
-data/mid/osmium/poland_latest_internal.json: data/in/osm_data/poland-latest-internal | data/mid/osmium ## generate osm raw data modified geojsonseq. ~15G
-	rm -f $@
-	OSMIUM_POOL_THREADS=$(osmium_pool_threads) osmium export -c osmium.config.json -f geojsonseq  data/in/osm_data/poland-latest-internal.osm.pbf  | jq > data/mid/osmium/poland_latest_internal.json
-	touch $@
-
-db/poland_internal_raw: data/mid/osmium/poland_latest_internal.json | db ## Initialize duckdb db and load raw json to the table. ~15G
-	./duckdb osmaboardbt.duckdb -c "drop table if exists poland_internal_raw; create table poland_internal_raw as select json_extract(json, '$.properties') as properties, json_extract(json, '$.geometry') as geom_geojson FROM read_json_objects('data/mid/osmium/poland_latest_internal.json', format='auto');"
+db/poland_internal_raw: data/in/osm_data/poland-latest-internal | db ## Initialize duckdb db and load pbf throug json output to the table. ~20G
+	rm -f poland_internal.duckdb
+	./duckdb poland_internal.duckdb -c "LOAD shellfs; set memory_limit = '$(duckdb_max_memory)'; create table poland_internal_raw as select json_extract(json, '$.properties') as properties, json_extract(json, '$.geometry') as geom_geojson FROM read_json_objects('OSMIUM_POOL_THREADS=$(osmium_pool_threads) osmium export -i sparse_file_array -c osmium.config.json -f geojsonseq data/in/osm_data/poland-latest-internal.osm.pbf | jq -c |', format='auto');"
 	touch $@
 
 data/mid/osmium/changesets-history: data/in/osm_data/changesets-latest.osm.bz2 | data/mid/osmium ## Split changesets data per years, run in parallel. ~7.2G
@@ -86,11 +82,13 @@ data/out/parquet/changesets_latest.parquet: data/mid/osmium/changesets_latest.os
 	python scrypts/osm_bz2_to_parquet.py -in data/mid/osmium/changesets_latest.osm.bz2 -out data/out/parquet/changesets_latest.parquet -chunk 5000
 	touch $@
 
-db/dbt_debug: db/poland_internal_raw | db ## check if exit code is 0, clean all. TODO: use different duckdb files and attach it to one another
+db/dbt_debug: | db ## check if exit code is 0, clean all.
 	cd $(DBT_PROFILES_DIR); dbt clean; dbt debug
 	touch $@
 
 db/dbt_models_run: data/out/parquet/changesets-history data/out/parquet/changesets_latest.parquet db/poland_internal_raw db/dbt_debug | db ## Load parquet files into duckdb, create raw and aggregated tables. ~32G after
+	rm -f osmaboardbt.duckdb
+	rm -rf osmaboardbt.duckdb.tmp
 	cd $(DBT_PROFILES_DIR); dbt run --full-refresh
 	touch $@
 

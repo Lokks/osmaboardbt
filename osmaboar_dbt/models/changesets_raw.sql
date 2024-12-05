@@ -22,3 +22,5 @@ select
     replace(filename, '../data/out/parquet/', '') as filename
 
 from read_parquet('../data/out/parquet/changesets*.parquet', filename = true)
+
+-- from read_parquet('../data/out/parquet/changesets_latest.parquet', filename = true)

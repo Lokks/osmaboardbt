@@ -32,9 +32,8 @@ Core differences:
 
 ## Disk usage
 
-Make sure you have around 80G disk space free for it's current state.
+Make sure you have around 70G disk space free for it's current state.
 Some estimates might be foud in targets comments.
-TODO: use shellfs during import to DuckDB and bz2 during json outputs creation.
 
 ## Dependencies installation
 

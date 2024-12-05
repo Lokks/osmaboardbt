@@ -10,7 +10,7 @@ make.svg
 make_last.svg
 make.lock
 osmaboardbt.duckdb.tmp
-osmaboardbt.duckdb
+*.duckdb
 osmaboardbt/logs
 misc.txt
 log.txt
