@@ -12,7 +12,7 @@ models:
           - not_null
         
   - name: first_user_changeset
-    description: "uid and his/her/their first changeset id"
+    description: "uid and his/her/their only first changeset id"
     columns:
       - name: uid
         description: "user id"
@@ -20,8 +20,8 @@ models:
           - unique
           - not_null
 
-  - name: changesets_number_per_user
-    description: "uid and his/her/their changeset number ordered by creation date"
+  # - name: changesets_number_per_user
+  #   description: "uid and his/her/their changeset number ordered by creation date"
 
   - name: changesets_by_month_app
     description: "aggregations by month per app (created_by)"

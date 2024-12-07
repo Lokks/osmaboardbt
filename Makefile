@@ -1,7 +1,7 @@
 ## -------------- VARIABLES BLOCK ----------------------
 current_date := $(shell date '+%y%m%d')
-aws_region := eu-central-1
-duckdb_max_memory := 4GB
+bucket_name := 48ee2bf5caf7247cf6e397b3cf67e857
+duckdb_max_memory := 5GB
 dbt_max_threads := 6
 osmium_pool_threads := 6
 max_parallel_workers := 4
@@ -51,7 +51,7 @@ data/in/osm_data/poland-latest-internal: ## check if internal file exists. Shoul
 data/mid/osmium: | data/mid ## Folder for temporary osm.bz2 files
 	mkdir -p $@
 
-db/poland_internal_raw: data/in/osm_data/poland-latest-internal | db ## Initialize duckdb db and load pbf throug json output to the table. ~20G
+db/poland_internal_raw: data/in/osm_data/poland-latest-internal | db ## Initialize duckdb db and load pbf throug json output to the table. ~15G
 	rm -f poland_internal.duckdb
 	./duckdb poland_internal.duckdb -c "LOAD shellfs; set memory_limit = '$(duckdb_max_memory)'; create table poland_internal_raw as select json_extract(json, '$.properties') as properties, json_extract(json, '$.geometry') as geom_geojson FROM read_json_objects('OSMIUM_POOL_THREADS=$(osmium_pool_threads) osmium export -i sparse_file_array -c osmium.config.json -f geojsonseq data/in/osm_data/poland-latest-internal.osm.pbf | jq -c |', format='auto');"
 	touch $@
@@ -82,15 +82,35 @@ data/out/parquet/changesets_latest.parquet: data/mid/osmium/changesets_latest.os
 	python scrypts/osm_bz2_to_parquet.py -in data/mid/osmium/changesets_latest.osm.bz2 -out data/out/parquet/changesets_latest.parquet -chunk 5000
 	touch $@
 
-db/dbt_debug: | db ## check if exit code is 0, clean all.
+db/dbt_debug: db/poland_internal_raw | db ## check if exit code is 0, clean all.
 	cd $(DBT_PROFILES_DIR); dbt clean; dbt debug
 	touch $@
 
-db/dbt_models_run: data/out/parquet/changesets-history data/out/parquet/changesets_latest.parquet db/poland_internal_raw db/dbt_debug | db ## Load parquet files into duckdb, create raw and aggregated tables. ~32G after
+db/dbt_models_run: data/out/parquet/changesets-history data/out/parquet/changesets_latest.parquet db/poland_internal_raw db/dbt_debug | db ## Load parquet files into duckdb, create raw and aggregated tables. ~18G after
 	rm -f osmaboardbt.duckdb
 	rm -rf osmaboardbt.duckdb.tmp
 	cd $(DBT_PROFILES_DIR); dbt run --full-refresh
 	touch $@
 
-dev: db/dbt_models_run ## [FINAL] final target
+data/out/csv: | data/out ## Output folder for csv result of analytical tables files.
+	mkdir -p $@
+
+data/out/csv/result_tables_output: db/dbt_models_run | data/out/csv ## Export results to csv. ~35M
+	rm -f data/out/csv/*.csv
+	./duckdb osmaboardbt.duckdb -c "COPY poland_internal_amenities_apps TO 'data/out/csv/poland_internal_amenities_apps.csv' (HEADER, DELIMITER ';');"
+	./duckdb osmaboardbt.duckdb -c "COPY changesets_by_month_app TO 'data/out/csv/changesets_by_month_app.csv' (HEADER, DELIMITER ';');"
+	./duckdb osmaboardbt.duckdb -c "COPY changesets_by_month_host TO 'data/out/csv/changesets_by_month_host.csv' (HEADER, DELIMITER ';');"
+	touch $@
+
+data/out/csv: | data/out ## Output folder for csv result of analytical tables files.
+	mkdir -p $@
+
+deploy: ## Folder for storing deploy footprints.
+	mkdir -p $@
+
+deploy/result_tables_output: data/out/csv/result_tables_output | deploy ## Put resulted csv files to S3
+	aws s3 sync --exclude="*" --include="*.csv" data/out/csv/ s3://$(bucket_name)/public/
+	touch $@
+
+dev: deploy/result_tables_output ## [FINAL] final target
 	touch $@

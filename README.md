@@ -32,7 +32,7 @@ Core differences:
 
 ## Disk usage
 
-Make sure you have around 70G disk space free for it's current state.
+Make sure you have around 75G disk space free for it's current state.
 Some estimates might be foud in targets comments.
 
 ## Dependencies installation

@@ -3,9 +3,9 @@
 {{ config(materialized='table') }}
 
 select
-    pi.changeset,
+    pi.changeset_id,
     pi.osm_type,
-    cs.created_by,
+    {{ created_by_name_unification('created_by', default_value='others') }} as created_by,
     case 
         when pi.tags->>'@amenity' = 'shop' then true
     else false 

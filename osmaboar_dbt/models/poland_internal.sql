@@ -2,7 +2,7 @@
 {{ config(materialized='table') }}
 
 select
-    cast(properties->>'@changeset' as bigint) as changeset,
+    cast(properties->>'@changeset' as bigint) as changeset_id,
     properties->>'@type' as osm_type,
     ST_GeomFromGeoJSON(geom_geojson) as geom,
     properties as tags  
