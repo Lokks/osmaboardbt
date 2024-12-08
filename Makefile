@@ -102,9 +102,6 @@ data/out/csv/result_tables_output: db/dbt_models_run | data/out/csv ## Export re
 	./duckdb osmaboardbt.duckdb -c "COPY changesets_by_month_host TO 'data/out/csv/changesets_by_month_host.csv' (HEADER, DELIMITER ';');"
 	touch $@
 
-data/out/csv: | data/out ## Output folder for csv result of analytical tables files.
-	mkdir -p $@
-
 deploy: ## Folder for storing deploy footprints.
 	mkdir -p $@
 

@@ -1,19 +1,22 @@
 # osmaboardbt project description
 
 Straightforward project to consume OSM data, DuckDB and DBT for data transformation to analize metadata.
-Puts result to S3-comptable storage to be shown in some dashboard.
+Puts result to S3 public storage to be used in some dashboards/warehouses.
+Data management approach is not consistent due to the main purpose - testing tools.
 
 ## Pipeline Steps Overview
 
 1. Download full changesets history file from planet OSM
-2. Download osm pbf file(s) for country of interest (Poland, for example)
+2. Download internal(!) osm pbf file(s) for country of interest (Poland, for example)
 3. Split changesets history to smaller osm.bz2 files
 4. Transform changesets files to parquet ones
-5. Load into local DuckDB and apply transformations via dbt models
+5. Load parquet into local DuckDB and apply transformations via dbt models
 6. Perform analyzis
 7. Load regular OSM data for more analyzis
-8. ....
-9. PROFIT!!
+8. Put results to public S3 storage
+9. Make some visualizations
+10. ....
+11. PROFIT!!
 
 ## Project overview
 
@@ -28,7 +31,7 @@ ETL/CI/CD pipeline:
 Core differences:
 
 - DuckDB + quackosm is used instead of PostgreSQL + Postgis
-- Db data transformations is managed by dbt
+- Db data transformations (at least final ones) are managed by dbt
 
 ## Disk usage
 
@@ -47,13 +50,13 @@ To be updated!
 Please follow official documentation
 
 - pip install duckdb --upgrade
-- pip install quackosm
+- pip install quackosm ## (with spatial, json and shellfs extensions)
 - pip install quackosm[cli]
 - pip install dbt-core dbt-duckdb
 
 ## Current state
 
-Step 6 from Steps Overview done (in some way), as well as step 7.
+Step 1-8 from Steps Overview done (in some way).
 Parquet files preparation is ready:
 
 ```SQL
@@ -80,3 +83,5 @@ D select filename, count(*) cnt from read_parquet('data/out/parquet/changesets_*
 └──────────────────────────────────────────────────────────┘
 
 ```
+
+Even test dashboard is available in [public notebook](https://databricks-prod-cloudfront.cloud.databricks.com/public/4027ec902e239c93eaaa8714f173bcfc/1763064240701749/2736829745881847/2628409179466692/latest.html) !
