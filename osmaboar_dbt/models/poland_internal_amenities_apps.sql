@@ -6,8 +6,13 @@ select
     pi.changeset_id,
     pi.osm_type,
     {{ created_by_name_unification('created_by', default_value='others') }} as created_by,
-    case 
-        when pi.tags->>'@amenity' = 'shop' then true
+    case
+        when (
+        json_extract(pi.tags, '$.shop') is not null
+        -- or
+        -- pi.tags->>'amenity' = 'shop'
+        ) 
+        then true
     else false 
     end as is_shop,
     case
@@ -16,7 +21,7 @@ select
     end as has_opening_hours
 
 from {{ ref('poland_internal') }} as pi
-left join {{ ref('changesets_raw') }} as cs 
-    on pi.changeset = cs.id
+left join {{ ref('changesets_raw_cleaned') }} as cs 
+    on pi.changeset_id = cs.id
 
 where json_extract(pi.tags, '$.amenity') is not null

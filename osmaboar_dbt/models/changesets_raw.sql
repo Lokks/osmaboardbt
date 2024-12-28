@@ -1,4 +1,6 @@
 -- changesets_raw
+-- {{ config(materialized='incremental', unique_key='id') }}
+
 {{ config(materialized='table') }}
 
 select
@@ -21,6 +23,4 @@ select
     lower(tags['hashtags'][1]) as hashtags,
     replace(filename, '../data/out/parquet/', '') as filename
 
-from read_parquet('../data/out/parquet/changesets*.parquet', filename = true)
-
--- from read_parquet('../data/out/parquet/changesets_latest.parquet', filename = true)
+from read_parquet('../data/out/parquet/changesets_*.parquet', filename = true)

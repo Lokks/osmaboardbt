@@ -8,5 +8,5 @@ date_trunc('month', closed_at) as cs_month,
 {{ host_name_unification('host') }} as host,
 count(*) as cs_count
 
-from {{ ref('changesets_raw') }} 
+from {{ ref('changesets_raw_cleaned') }} 
 group by 1, 2

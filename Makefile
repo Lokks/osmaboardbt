@@ -18,7 +18,6 @@ clean_all: ## [FINAL] Cleans worktree by removing input data
 clean_dev: ## [FINAL] Cleans data for latest period only
 	rm -rf osmaboardbt.duckdb.tmp
 	rm -f data/in/osm_data/changesets_latest.osm.bz2 db/dbt_debug db/osm_internal_raw osmaboardbt.duckdb
-# 	rm -f data/in/osm_data/poland-latest-internal.osm.pbf
 
 data: ## file based datasets.
 	mkdir -p $@
@@ -86,16 +85,20 @@ db/dbt_debug: db/poland_internal_raw | db ## check if exit code is 0, clean all.
 	cd $(DBT_PROFILES_DIR); dbt clean; dbt debug
 	touch $@
 
-db/dbt_models_run: data/out/parquet/changesets-history data/out/parquet/changesets_latest.parquet db/poland_internal_raw db/dbt_debug | db ## Load parquet files into duckdb, create raw and aggregated tables. ~18G after
+db/dbt_models_run: data/out/parquet/changesets-history data/out/parquet/changesets_latest.parquet db/poland_internal_raw db/dbt_debug | db ## Load parquet files into duckdb, create raw and aggregated tables. ~20G after
 	rm -f osmaboardbt.duckdb
 	rm -rf osmaboardbt.duckdb.tmp
 	cd $(DBT_PROFILES_DIR); dbt run --full-refresh
 	touch $@
 
+db/dbt_models_test: db/dbt_models_run | db ## Perform data validation tests
+	cd $(DBT_PROFILES_DIR); dbt test
+	touch $@
+
 data/out/csv: | data/out ## Output folder for csv result of analytical tables files.
 	mkdir -p $@
 
-data/out/csv/result_tables_output: db/dbt_models_run | data/out/csv ## Export results to csv. ~35M
+data/out/csv/result_tables_output: db/dbt_models_test | data/out/csv ## Export results to csv. ~35M
 	rm -f data/out/csv/*.csv
 	./duckdb osmaboardbt.duckdb -c "COPY poland_internal_amenities_apps TO 'data/out/csv/poland_internal_amenities_apps.csv' (HEADER, DELIMITER ';');"
 	./duckdb osmaboardbt.duckdb -c "COPY changesets_by_month_app TO 'data/out/csv/changesets_by_month_app.csv' (HEADER, DELIMITER ';');"

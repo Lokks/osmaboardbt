@@ -8,9 +8,17 @@ models:
       - name: id
         description: "changeset id"
         data_tests:
-          - unique
           - not_null
-        
+
+  - name: changesets_raw_cleaned
+    description: "data from changesets raw enriched with unique row_nimber"
+    columns:
+      - name: id
+        description: "changeset id"
+        data_tests:
+          - not_null
+          - unique
+
   - name: first_user_changeset
     description: "uid and his/her/their only first changeset id"
     columns:
@@ -34,3 +42,8 @@ models:
 
   - name: poland_internal_amenities_apps
     description: "osm poland amenities by latest used apps upon it"
+    columns:
+      - name: changeset_id
+        description: "changeset id"
+        data_tests:
+          - not_null
